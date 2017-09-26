@@ -3,6 +3,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/* the calls to memcpy() here implement unaligned accesses, and are
+   compiled by gcc to mov instructions (even if you call this function
+   memcpy, too) */
 void *ssememcpy(void *dest, const void *src, size_t n)
 {
   if (n<9) {
