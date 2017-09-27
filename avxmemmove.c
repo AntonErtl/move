@@ -45,7 +45,7 @@ void *avxmemmove(void *dest, const void *src, size_t n)
       //printf("load %p, load %p\n", src, dlast+off);
       __m256i x3 = _mm256_loadu_si256((__m256i *)src);
       __m256i x4 = _mm256_loadu_si256((__m256i *)(dlast+off));
-      if (off > -n) {
+      if (off <= -n) {
         //printf("a\n");
         void *d = (void *)(((intptr_t)(dest+32))&~31);
 #ifdef NO_UNROLLING
