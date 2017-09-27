@@ -52,6 +52,9 @@ perfex: memcpy memmove repmovsb
 avxmemcpy.o: avxmemcpy.c
 	$(CC) $(CFLAGS) -mavx -c avxmemcpy.c
 
+avxmemmove.o: avxmemmove.c
+	$(CC) $(CFLAGS) -mavx -c avxmemmove.c
+
 memcpy: memcpy.o main.o
 
 memmove: memmove.o main.o
@@ -77,7 +80,12 @@ rndavx: avxmemcpy.o avx.o random.o
 rndsse: ssememcpy.o sse.o random.o
 	$(CC) $^ -o $@
 
-test: testmemcpy.c $(TEST)memcpy.o
+testcpy: testmemcpy.c $(TEST)memcpy.o
 	gcc -O -Wall -Dtestmemcpy=$(TEST)memcpy -c testmemcpy.c
 	gcc testmemcpy.o $(TEST)memcpy.o -o testmemcpy
 	./testmemcpy
+
+testmove: testmemmove.c $(TEST)memmove.o
+	gcc -O -Wall -Dtestmemmove=$(TEST)memmove -c testmemmove.c
+	gcc testmemmove.o $(TEST)memmove.o -o testmemmove
+	./testmemmove

@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 /* on Zen better use ssememcpy: its about as fast for most cases, and
-   the case where avxmemcpy calls _mm256_maskload_ps/
+   for block sizes 5..63 where avxmemcpy uses _mm256_maskload_ps/
    _mm256_maskstore_ps is slow on Zen */
 
 /* the calls to memcpy() here implement unaligned accesses, and are
