@@ -42,11 +42,12 @@ void *avxmemmove(void *dest, const void *src, size_t n)
     } else { /* n>=64 */
       void *dlast = dest+n-32;
       uintptr_t off = src-dest;
-      //printf("load %p, load %p\n", src, dlast+off);
       __m256i x3 = _mm256_loadu_si256((__m256i *)src);
       __m256i x4 = _mm256_loadu_si256((__m256i *)(dlast+off));
+      /* the following test succeeds in all cases where forward stride works.
+         this bias towards one case leads to good branch prediction.
+         to bias for backwards stride, use "off < n" */
       if (off <= -n) {
-        //printf("a\n");
         void *d = (void *)(((intptr_t)(dest+32))&~31);
 #ifdef NO_UNROLLING
         for (; d<dlast; d+=32) {
@@ -55,23 +56,19 @@ void *avxmemmove(void *dest, const void *src, size_t n)
         }
 #else
         for (; d<dlast-32; d+=64) {
-          //printf("a64 s = %p, d = %p\n", d+off, d);
           __m256i x1 = _mm256_loadu_si256((__m256i *)(d+off));
           __m256i x2 = _mm256_loadu_si256((__m256i *)(d+off+32));
           _mm256_storeu_si256((__m256i *)d, x1);
           _mm256_storeu_si256((__m256i *)(d+32), x2);
         }
         if (d<dlast) {
-          //printf("a32 s = %p, d = %p\n", d+off, d);
           __m256i x = _mm256_loadu_si256((__m256i *)(d+off));
           _mm256_storeu_si256((__m256i *)d, x);
         }
 #endif
-        //printf("store %p, store %p\n", dest, dlast);
         _mm256_storeu_si256((__m256i *)dest, x3);
         _mm256_storeu_si256((__m256i *)dlast, x4);
       } else {
-        //printf("b\n");
         void *d = (void *)(((uintptr_t)dlast)&~31);
 #ifdef NO_UNROLLING
         for (; d>=dest+32; d-=32) {
@@ -80,20 +77,16 @@ void *avxmemmove(void *dest, const void *src, size_t n)
         }
 #else
         for (; d>=dest+32; d-=64) {
-          //printf("b64 s = %p, d = %p\n", d+off-32, d-32);
           __m256i x1 = _mm256_loadu_si256((__m256i *)(d+off));
           __m256i x2 = _mm256_loadu_si256((__m256i *)(d+off-32));
           _mm256_storeu_si256((__m256i *)d, x1);
           _mm256_storeu_si256((__m256i *)(d-32), x2);
         }
-        //printf("d=%p, dest+32=%p\n",d,dest+32);
         if (d>=dest) {
-          //printf("b32 s = %p, d = %p\n", d+off, d);
           __m256i x = _mm256_loadu_si256((__m256i *)(d+off));
           _mm256_storeu_si256((__m256i *)d, x);
         }
 #endif
-        //printf("store %p, store %p\n", dest, dlast);
         _mm256_storeu_si256((__m256i *)dest, x3);
         _mm256_storeu_si256((__m256i *)dlast, x4);
       }
