@@ -21,6 +21,7 @@ int main()
   for (i=0; i<4096; i++) {
     for (j=0; j<162 && j<4096-i; j++) {
       for (k=MAX(0,i-163); k<i+163 && k<4096-j; k++) {
+	//  i=163,j=125,k=39; {{{
         memcpy(dest1+4096,src1+4096,4096);
         memcpy(ref1+4096,src1+4096,4096);
         testmemmove(dest1+4096+i,dest1+4096+k,j);

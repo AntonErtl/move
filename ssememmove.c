@@ -59,16 +59,14 @@ void *ssememmove(void *dest, const void *src, size_t n)
           _mm_storeu_si128((__m128i *)d, x1);
         }
 #else
+	__m128i x5 = _mm_loadu_si128((__m128i *)(dlast+off-16));
         for (; d<dlast-16; d+=32) {
           __m128i x1 = _mm_loadu_si128((__m128i *)(d+off));
           __m128i x2 = _mm_loadu_si128((__m128i *)(d+off+16));
           _mm_storeu_si128((__m128i *)d, x1);
           _mm_storeu_si128((__m128i *)(d+16), x2);
         }
-        if (d<dlast) {
-          __m128i x = _mm_loadu_si128((__m128i *)(d+off));
-          _mm_storeu_si128((__m128i *)d, x);
-        }
+        _mm_storeu_si128((__m128i *)(dlast-16), x5);
 #endif
         _mm_storeu_si128((__m128i *)dest, x3);
         _mm_storeu_si128((__m128i *)dlast, x4);
@@ -80,16 +78,14 @@ void *ssememmove(void *dest, const void *src, size_t n)
           _mm_storeu_si128((__m128i *)d, x);
         }
 #else
+	__m128i x6 = _mm_loadu_si128((__m128i *)(src+16));
         for (; d>=dest+16; d-=32) {
           __m128i x1 = _mm_loadu_si128((__m128i *)(d+off));
           __m128i x2 = _mm_loadu_si128((__m128i *)(d+off-16));
           _mm_storeu_si128((__m128i *)d, x1);
           _mm_storeu_si128((__m128i *)(d-16), x2);
         }
-        if (d>=dest) {
-          __m128i x = _mm_loadu_si128((__m128i *)(d+off));
-          _mm_storeu_si128((__m128i *)d, x);
-        }
+        _mm_storeu_si128((__m128i *)(dest+16), x6);
 #endif
         _mm_storeu_si128((__m128i *)dest, x3);
         _mm_storeu_si128((__m128i *)dlast, x4);

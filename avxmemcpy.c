@@ -37,30 +37,28 @@ void *avxmemcpy(void *dest, const void *src, size_t n)
       _mm256_maskstore_ps((float *)dest, mask, p1);
       _mm256_maskstore_ps((float *)(dest+(n-masklen-4)), mask, p2);
     } else { /* n>=64 */
-      __m256i x = _mm256_loadu_si256((__m256i *)src);
+      __m256i x1 = _mm256_loadu_si256((__m256i *)src);
       ptrdiff_t off = src-dest;
       void *dlast = dest+n-32;
-      _mm256_storeu_si256((__m256i *)dest, x);
       void *d = (void *)(((intptr_t)(dest+32))&~31);
+      __m256i x3 = _mm256_loadu_si256((__m256i *)(dlast+off));
 #ifdef NO_UNROLLING
       for (; d<dlast; d+=32) {
-        x = _mm256_loadu_si256((__m256i *)(d+off));
+        __m256i x = _mm256_loadu_si256((__m256i *)(d+off));
         _mm256_storeu_si256((__m256i *)d, x);
       }
 #else
+      __m256i x2 = _mm256_loadu_si256((__m256i *)(dlast+off-32));
       for (; d<dlast-32; d+=64) {
         __m256i x1 = _mm256_loadu_si256((__m256i *)(d+off));
         __m256i x2 = _mm256_loadu_si256((__m256i *)(d+off+32));
         _mm256_storeu_si256((__m256i *)d, x1);
         _mm256_storeu_si256((__m256i *)(d+32), x2);
       }
-      if (d<dlast) {
-        x = _mm256_loadu_si256((__m256i *)(d+off));
-        _mm256_storeu_si256((__m256i *)d, x);
-      }
+      _mm256_storeu_si256((__m256i *)(dlast-32), x2);
 #endif
-      x = _mm256_loadu_si256((__m256i *)(dlast+off));
-      _mm256_storeu_si256((__m256i *)dlast, x);
+      _mm256_storeu_si256((__m256i *)dest, x1);
+      _mm256_storeu_si256((__m256i *)dlast, x3);
     }
   }
   return dest;

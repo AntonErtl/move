@@ -1,15 +1,15 @@
 CC=gcc
 CFLAGS=-O -Wall
-VARIANTS=repmovsb memmove memcpy sse $(EXTRA)
+VARIANTS=repmovsb memmove memcpy ssecpy ssemove $(EXTRA)
 SIZES=1 8 32 64 128 256 512 1024 2048 4096 8192 16384
-SOURCES=Makefile main.c memcpy.c memmove.c repmovsb.c avx.c avxmemcpy.c sse.c ssememcpy.c random.c testmemcpy.c
+SOURCES=Makefile main.c memcpy.c memmove.c repmovsb.c avx.c avxmemcpy.c sse.c ssememcpy.c random.c testmemcpy.c testmemmove.c avxmove.c ssemove.c
 RND="0 1 3 25 79 100" "0 1 3 7 13 25 39 55"
 TEST=avx
 
 all: $(VARIANTS) $(addprefix rnd,$(VARIANTS))
 
 clean:
-	-rm *.o memcpy memmove repmovsb avx sse rndmemcpy rndmemmove rndrepmovsb rndavx rndsse perf.data* *~
+	-rm *.o memcpy memmove repmovsb avxcpy ssecpy avxmove ssemove rndmemcpy rndmemmove rndrepmovsb rndavxcpy rndssecpy perf.data* *~
 
 dist: $(SOURCES)
 	-rm -rf move
@@ -61,9 +61,13 @@ memmove: memmove.o main.o
 
 repmovsb: repmovsb.o main.o
 
-avx: avxmemcpy.o avx.o main.o
+avxcpy: avxmemcpy.o avxcpy.o main.o
 
-sse: ssememcpy.o sse.o main.o
+ssecpy: ssememcpy.o ssecpy.o main.o
+
+avxmove: avxmemmove.o avxmove.o main.o
+
+ssemove: ssememmove.o ssemove.o main.o
 
 rndmemcpy: memcpy.o random.o
 	$(CC) $^ -o $@
@@ -74,18 +78,24 @@ rndmemmove: memmove.o random.o
 rndrepmovsb: repmovsb.o random.o
 	$(CC) $^ -o $@
 
-rndavx: avxmemcpy.o avx.o random.o
+rndavxcpy: avxmemcpy.o avxcpy.o random.o
 	$(CC) $^ -o $@
 
-rndsse: ssememcpy.o sse.o random.o
+rndssecpy: ssememcpy.o ssecpy.o random.o
+	$(CC) $^ -o $@
+
+rndavxmove: avxmemmove.o avxmove.o random.o
+	$(CC) $^ -o $@
+
+rndssemove: ssememmove.o ssemove.o random.o
 	$(CC) $^ -o $@
 
 testcpy: testmemcpy.c $(TEST)memcpy.o
-	gcc -O -Wall -Dtestmemcpy=$(TEST)memcpy -c testmemcpy.c
+	gcc $(CFLAGS) -Dtestmemcpy=$(TEST)memcpy -c testmemcpy.c
 	gcc testmemcpy.o $(TEST)memcpy.o -o testmemcpy
 	./testmemcpy
 
 testmove: testmemmove.c $(TEST)memmove.o
-	gcc -O -Wall -Dtestmemmove=$(TEST)memmove -c testmemmove.c
+	gcc $(CFLAGS) -Dtestmemmove=$(TEST)memmove -c testmemmove.c
 	gcc testmemmove.o $(TEST)memmove.o -o testmemmove
 	./testmemmove

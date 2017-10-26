@@ -44,23 +44,21 @@ void *ssememcpy(void *dest, const void *src, size_t n)
         _mm_storeu_si128(dest+(n-16), temp2);
       }
     } else { /* n>32 */
-      __m128i x = _mm_loadu_si128((__m128i *)src);
+      __m128i x3 = _mm_loadu_si128((__m128i *)src);
       ptrdiff_t off = src-dest;
       void *dlast = dest+n-16;
-      _mm_storeu_si128((__m128i *)dest, x);
       void *d = (void *)(((intptr_t)(dest+16))&~15);
+      __m128i x4 = _mm_loadu_si128((__m128i *)(dlast+off-16));
+      __m128i x5 = _mm_loadu_si128((__m128i *)(dlast+off));
       for (; d<dlast-16; d+=32) {
         __m128i x1 = _mm_loadu_si128((__m128i *)(d+off));
         __m128i x2 = _mm_loadu_si128((__m128i *)(d+off+16));
         _mm_storeu_si128((__m128i *)d, x1);
         _mm_storeu_si128((__m128i *)(d+16), x2);
       }
-      if (d<dlast) {
-        x = _mm_loadu_si128((__m128i *)(d+off));
-        _mm_storeu_si128((__m128i *)d, x);
-      }
-      x = _mm_loadu_si128((__m128i *)(dlast+off));
-      _mm_storeu_si128((__m128i *)dlast, x);
+      _mm_storeu_si128((__m128i *)dest, x3);
+      _mm_storeu_si128((__m128i *)(dlast-16), x4);
+      _mm_storeu_si128((__m128i *)dlast, x5);
     }
   }
   return dest;

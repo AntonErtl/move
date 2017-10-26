@@ -43,7 +43,7 @@ void *avxmemmove(void *dest, const void *src, size_t n)
       void *dlast = dest+n-32;
       uintptr_t off = src-dest;
       __m256i x3 = _mm256_loadu_si256((__m256i *)src);
-      __m256i x4 = _mm256_loadu_si256((__m256i *)(dlast+off));
+      __m256i x5 = _mm256_loadu_si256((__m256i *)(dlast+off));
       /* the following test succeeds in all cases where forward stride works.
          this bias towards one case leads to good branch prediction.
          to bias for backwards stride, use "off < n" */
@@ -55,19 +55,19 @@ void *avxmemmove(void *dest, const void *src, size_t n)
           _mm256_storeu_si256((__m256i *)d, x);
         }
 #else
+	__m256i x4 = _mm256_loadu_si256((__m256i *)(dlast+off-32));
         for (; d<dlast-32; d+=64) {
           __m256i x1 = _mm256_loadu_si256((__m256i *)(d+off));
           __m256i x2 = _mm256_loadu_si256((__m256i *)(d+off+32));
           _mm256_storeu_si256((__m256i *)d, x1);
           _mm256_storeu_si256((__m256i *)(d+32), x2);
         }
-        if (d<dlast) {
-          __m256i x = _mm256_loadu_si256((__m256i *)(d+off));
-          _mm256_storeu_si256((__m256i *)d, x);
-        }
+	_mm256_storeu_si256((__m256i *)(dlast-32), x4);
 #endif
-        _mm256_storeu_si256((__m256i *)dest, x3);
-        _mm256_storeu_si256((__m256i *)dlast, x4);
+      end:
+	_mm256_storeu_si256((__m256i *)dest, x3);
+	_mm256_storeu_si256((__m256i *)dlast, x5);
+	return dest;
       } else {
         void *d = (void *)(((uintptr_t)dlast)&~31);
 #ifdef NO_UNROLLING
@@ -76,19 +76,16 @@ void *avxmemmove(void *dest, const void *src, size_t n)
           _mm256_storeu_si256((__m256i *)d, x);
         }
 #else
+	__m256i x6 = _mm256_loadu_si256((__m256i *)(src+32));
         for (; d>=dest+32; d-=64) {
           __m256i x1 = _mm256_loadu_si256((__m256i *)(d+off));
           __m256i x2 = _mm256_loadu_si256((__m256i *)(d+off-32));
           _mm256_storeu_si256((__m256i *)d, x1);
           _mm256_storeu_si256((__m256i *)(d-32), x2);
         }
-        if (d>=dest) {
-          __m256i x = _mm256_loadu_si256((__m256i *)(d+off));
-          _mm256_storeu_si256((__m256i *)d, x);
-        }
+	_mm256_storeu_si256((__m256i *)(dest+32), x6);
 #endif
-        _mm256_storeu_si256((__m256i *)dest, x3);
-        _mm256_storeu_si256((__m256i *)dlast, x4);
+	goto end;
       }
     }
   }
