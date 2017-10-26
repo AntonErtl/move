@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-O -Wall
 VARIANTS=repmovsb memmove memcpy ssecpy ssemove $(EXTRA)
 SIZES=1 8 32 64 128 256 512 1024 2048 4096 8192 16384
-SOURCES=Makefile main.c memcpy.c memmove.c repmovsb.c avx.c avxmemcpy.c sse.c ssememcpy.c random.c testmemcpy.c testmemmove.c avxmove.c ssemove.c
+SOURCES=Makefile main.c memcpy.c memmove.c repmovsb.c avxcpy.c avxmemcpy.c ssecpy.c ssememcpy.c random.c testmemcpy.c testmemmove.c avxmove.c ssemove.c
 RND="0 1 3 25 79 100" "0 1 3 7 13 25 39 55"
 TEST=avx
 
